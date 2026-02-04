@@ -56,16 +56,17 @@ document.addEventListener("DOMContentLoaded", () => {
   updateDesktopNavbar(window.scrollY);
 
   /* =====================================================
-     3. MOBILE NAVBAR — SAFARI-STYLE HIDE / SHOW
+     3. MOBILE NAVBAR — SAFARI-STYLE HIDE / SHOW (FIXED)
      ===================================================== */
   if (isMobile && !prefersReducedMotion) {
 
     let lastScrollY = window.scrollY;
     let accumulated = 0;
+    let lastDirection = null;
     let navVisibility = "visible";
 
     const HIDE_THRESHOLD = 32; // downward intent
-    const SHOW_THRESHOLD = 3; // upward intent
+    const SHOW_THRESHOLD = 5;  // upward intent
     const TOP_LOCK = 80;       // always visible near top
     const NOISE = 1;           // ignore micro scroll
 
@@ -86,6 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
       /* Always visible near top */
       if (currentY < TOP_LOCK) {
         accumulated = 0;
+        lastDirection = null;
         setNavVisibility("visible");
         return;
       }
@@ -93,16 +95,24 @@ document.addEventListener("DOMContentLoaded", () => {
       /* Ignore tiny movements */
       if (Math.abs(delta) < NOISE) return;
 
+      const direction = delta > 0 ? "down" : "up";
+
+      /* Reset intent when direction changes */
+      if (direction !== lastDirection) {
+        accumulated = 0;
+        lastDirection = direction;
+      }
+
       accumulated += delta;
 
       /* Scroll down → hide */
-      if (accumulated > HIDE_THRESHOLD && navVisibility === "visible") {
+      if (direction === "down" && accumulated > HIDE_THRESHOLD) {
         setNavVisibility("hidden");
         accumulated = 0;
       }
 
       /* Scroll up → show */
-      if (accumulated < -SHOW_THRESHOLD && navVisibility === "hidden") {
+      if (direction === "up" && accumulated < -SHOW_THRESHOLD) {
         setNavVisibility("visible");
         accumulated = 0;
       }
