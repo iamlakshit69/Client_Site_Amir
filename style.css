@@ -391,7 +391,7 @@ p {
   }
 
   .navbar[data-nav-visibility="hidden"] {
-    transform: translateX(-50%) translateY(-120%);
+    transform: translateX(-50%) translateY(-150%);
     transition: transform 200ms cubic-bezier(0.4, 0, 1, 1);
   }
 
