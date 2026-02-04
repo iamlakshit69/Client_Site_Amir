@@ -1,133 +1,124 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   /* =====================================================
-     1. CAPABILITIES & USER PREFERENCES
+     1. ENVIRONMENT & PREFERENCES
+     ===================================================== */
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+  const navbar = document.querySelector(".navbar");
+  if (!navbar) return;
+
+  /* =====================================================
+     2. DESKTOP NAVBAR (UNCHANGED BEHAVIOR)
+     ===================================================== */
+  if (!isMobile) {
+    let lastState = "top";
+
+    const getThreshold = () =>
+      Math.round(window.innerHeight * 0.06);
+
+    let threshold = getThreshold();
+
+    function updateDesktopNavbar() {
+      const scrollTop =
+        document.documentElement.scrollTop || window.pageYOffset;
+
+      const nextState = scrollTop > threshold ? "scrolled" : "top";
+
+      if (nextState !== lastState) {
+        navbar.classList.toggle("scrolled", nextState === "scrolled");
+        lastState = nextState;
+      }
+    }
+
+    window.addEventListener("scroll", updateDesktopNavbar, { passive: true });
+    window.addEventListener("resize", () => {
+      threshold = getThreshold();
+      updateDesktopNavbar();
+    });
+
+    updateDesktopNavbar();
+    return;
+  }
+
+  /* =====================================================
+     3. MOBILE SAFARI-STYLE NAVBAR (HIDE / SHOW)
+     ===================================================== */
+  if (prefersReducedMotion) return;
+
+  let lastScroll =
+    document.documentElement.scrollTop || window.pageYOffset;
+
+  let accumulator = 0;
+  let navState = "visible";
+
+  /* ---- Tunable feel knobs ---- */
+  const HIDE_THRESHOLD = 24; // scroll down intent
+  const SHOW_THRESHOLD = 10; // scroll up intent
+  const TOP_LOCK = 80;       // always visible near top
+  const NOISE = 1;           // ignore micro jitter
+
+  function setNavState(state) {
+    if (navState === state) return;
+    navbar.dataset.state = state;
+    navState = state;
+  }
+
+  /* Ensure visible on load */
+  setNavState("visible");
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      const currentScroll =
+        document.documentElement.scrollTop || window.pageYOffset;
+
+      const delta = currentScroll - lastScroll;
+      lastScroll = currentScroll;
+
+      /* Always visible near top */
+      if (currentScroll < TOP_LOCK) {
+        accumulator = 0;
+        setNavState("visible");
+        return;
+      }
+
+      /* Ignore tiny movement */
+      if (Math.abs(delta) < NOISE) return;
+
+      accumulator += delta;
+
+      /* Scroll down → hide */
+      if (accumulator > HIDE_THRESHOLD && navState === "visible") {
+        setNavState("hidden");
+        accumulator = 0;
+      }
+
+      /* Scroll up → show */
+      if (accumulator < -SHOW_THRESHOLD && navState === "hidden") {
+        setNavState("visible");
+        accumulator = 0;
+      }
+    },
+    { passive: true }
+  );
+
+  /* Accessibility: show navbar on focus */
+  navbar.addEventListener("focusin", () => {
+    setNavState("visible");
+  });
+
+  /* =====================================================
+     4. INTERACTION FEEDBACK (DESKTOP ONLY)
      ===================================================== */
   const isTouch =
     window.matchMedia("(pointer: coarse)").matches ||
     navigator.maxTouchPoints > 0;
 
-  const isMobile =
-    window.matchMedia("(max-width: 768px)").matches && isTouch;
-
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
-
-  /* =====================================================
-     2. DESKTOP NAVBAR — TOP / SCROLLED STATE
-     (UNCHANGED BEHAVIOR)
-     ===================================================== */
-  const navbar = document.querySelector(".navbar");
-  if (!navbar) return;
-
-  let desktopState = "top";
-  let ticking = false;
-
-  const getScrollThreshold = () =>
-    Math.round(window.innerHeight * 0.06);
-
-  let scrollThreshold = getScrollThreshold();
-
-  function updateDesktopNavbar(scrollY) {
-    const nextState = scrollY > scrollThreshold ? "scrolled" : "top";
-    if (nextState !== desktopState) {
-      navbar.classList.toggle("scrolled", nextState === "scrolled");
-      desktopState = nextState;
-    }
-  }
-
-  function onDesktopScroll() {
-    if (!ticking) {
-      window.requestAnimationFrame(() => {
-        updateDesktopNavbar(window.scrollY);
-        ticking = false;
-      });
-      ticking = true;
-    }
-  }
-
-  window.addEventListener("scroll", onDesktopScroll, { passive: true });
-  window.addEventListener("resize", () => {
-    scrollThreshold = getScrollThreshold();
-    updateDesktopNavbar(window.scrollY);
-  });
-
-  updateDesktopNavbar(window.scrollY);
-
-  /* =====================================================
-     3. MOBILE NAVBAR — SAFARI-STYLE HIDE / SHOW (FIXED)
-     ===================================================== */
-  if (isMobile && !prefersReducedMotion) {
-
-    let lastScrollY = window.scrollY;
-    let accumulated = 0;
-    let lastDirection = null;
-    let navVisibility = "visible";
-
-    const HIDE_THRESHOLD = 32; // downward intent
-    const SHOW_THRESHOLD = 5;  // upward intent
-    const TOP_LOCK = 80;       // always visible near top
-    const NOISE = 1;           // ignore micro scroll
-
-    function setNavVisibility(state) {
-      if (navVisibility === state) return;
-      navbar.dataset.state = state;
-      navVisibility = state;
-    }
-
-    // Ensure visible on load
-    setNavVisibility("visible");
-
-    window.addEventListener("scroll", () => {
-      const currentY = window.scrollY;
-      const delta = currentY - lastScrollY;
-      lastScrollY = currentY;
-
-      /* Always visible near top */
-      if (currentY < TOP_LOCK) {
-        accumulated = 0;
-        lastDirection = null;
-        setNavVisibility("visible");
-        return;
-      }
-
-      /* Ignore tiny movements */
-      if (Math.abs(delta) < NOISE) return;
-
-      const direction = delta > 0 ? "down" : "up";
-
-      /* Reset intent when direction changes */
-      if (direction !== lastDirection) {
-        accumulated = 0;
-        lastDirection = direction;
-      }
-
-      accumulated += delta;
-
-      /* Scroll down → hide */
-      if (direction === "down" && accumulated > HIDE_THRESHOLD) {
-        setNavVisibility("hidden");
-        accumulated = 0;
-      }
-
-      /* Scroll up → show */
-      if (direction === "up" && accumulated < -SHOW_THRESHOLD) {
-        setNavVisibility("visible");
-        accumulated = 0;
-      }
-
-    }, { passive: true });
-
-    /* Accessibility: reveal navbar on focus */
-    navbar.addEventListener("focusin", () => {
-      setNavVisibility("visible");
-    });
-  }
-
-  /* =====================================================
-     4. INTERACTION FEEDBACK (DESKTOP ONLY)
-     ===================================================== */
   if (!isTouch && !prefersReducedMotion) {
     const liftables = document.querySelectorAll(
       ".problem-card, .plan-card, .visual-box"
@@ -137,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
       el.addEventListener("mouseenter", () => {
         el.classList.add("lift");
       });
-
       el.addEventListener("mouseleave", () => {
         el.classList.remove("lift");
       });
@@ -159,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* =====================================================
-     6. NAV SECTION AWARENESS
+     6. NAV SECTION AWARENESS (DESKTOP)
      ===================================================== */
   const sections = document.querySelectorAll("section[id]");
   const navLinks = document.querySelectorAll(".nav-links a");
@@ -185,13 +175,6 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     sections.forEach(section => observer.observe(section));
-  }
-
-  /* =====================================================
-     7. REDUCED MOTION — HARD STOP
-     ===================================================== */
-  if (prefersReducedMotion) {
-    document.documentElement.style.scrollBehavior = "auto";
   }
 
 });
