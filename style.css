@@ -1,37 +1,50 @@
-/* =========================================
-   RESET + TOKENS
-========================================= */
+/* =====================================================
+   DESIGN TOKENS
+===================================================== */
 :root {
-  /* BACKGROUNDS */
-  --bg-page: #edeada;        /* main canvas */
-  --bg-section: #e1e6d2;     /* alternating sections */
-  --bg-card: #f6f5ec;        /* cards */
-  --bg-header: #e8e6d6;      /* navbar */
+  --bg-page: #edeada;
+  --bg-section: #e1e6d2;
+  --bg-card: #f6f5ec;
 
-  /* INK */
   --ink-strong: #18261d;
   --ink-main: #2c3d31;
   --ink-muted: #5a6b60;
 
-  /* GREEN SYSTEM */
   --green-dark: #1f3326;
   --green-hover: #16271d;
   --green-soft: #d4dcc6;
   --green-accent: #9fb38a;
 
-  /* TYPO */
   --font-heading: "Playfair Display", serif;
   --font-body: "Inter", sans-serif;
 
-  /* LAYOUT */
-  --container: 1200px;
+  /* TYPE SCALE */
+  --fs-h1: clamp(2.2rem, 6vw, 4.4rem);
+  --fs-h2: clamp(1.8rem, 4vw, 2.6rem);
+  --fs-h3: clamp(1.15rem, 2.4vw, 1.4rem);
+  --fs-body: clamp(1rem, 2.2vw, 1.05rem);
+  --fs-small: clamp(0.88rem, 2vw, 0.95rem);
+
+  --lh-body: clamp(1.5, 1.2vw, 1.65);
+  --lh-heading: 1.15;
+
+  --section-pad: clamp(64px, 8vh, 96px);
+
+  --gap-lg: clamp(48px, 8vw, 80px);
+  --gap-md: clamp(28px, 5vw, 44px);
+  --gap-sm: clamp(16px, 3vw, 24px);
+
   --radius-sm: 10px;
   --radius-md: 18px;
   --radius-lg: 26px;
   --radius-pill: 999px;
+
+  --container: 1200px;
 }
 
-/* RESET */
+/* =====================================================
+   RESET
+===================================================== */
 *,
 *::before,
 *::after {
@@ -44,9 +57,10 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
   background: var(--bg-page);
   color: var(--ink-main);
-  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -54,82 +68,84 @@ img { max-width: 100%; display: block; }
 a { text-decoration: none; color: inherit; }
 ul { list-style: none; }
 
-/* =========================================
-   GLOBAL
-========================================= */
+/* =====================================================
+   ACCESSIBILITY
+===================================================== */
+:focus-visible {
+  outline: 2px solid var(--green-accent);
+  outline-offset: 3px;
+}
+
+/* =====================================================
+   LAYOUT
+===================================================== */
 .container {
   max-width: var(--container);
-  margin: 0 auto;
-  padding: 0 32px;
+  margin-inline: auto;
+  padding-inline: clamp(20px, 4vw, 32px);
 }
 
 .section {
-  padding: 90px 0;
+  padding-block: var(--section-pad);
 }
 
 .center {
   text-align: center;
-  margin-inline: auto;
 }
 
-/* =========================================
+/* =====================================================
    TYPOGRAPHY
-========================================= */
+===================================================== */
 h1, h2, h3 {
   font-family: var(--font-heading);
   font-weight: 500;
   color: var(--ink-strong);
-  line-height: 1.15;
+  line-height: var(--lh-heading);
 }
 
-h1 {
-  font-size: clamp(3.2rem, 6vw, 4.6rem);
-  margin-bottom: 28px;
-}
-
-h2 {
-  font-size: 2.5rem;
-  margin-bottom: 16px;
-}
-
-h3 {
-  font-size: 1.4rem;
-  margin-bottom: 10px;
-}
+h1 { font-size: var(--fs-h1); margin-bottom: 0.6em; }
+h2 { font-size: var(--fs-h2); margin-bottom: 0.4em; }
+h3 { font-size: var(--fs-h3); margin-bottom: 0.3em; }
 
 p {
-  max-width: 680px;
-  font-size: 1.05rem;
   color: var(--ink-muted);
+  max-width: 60ch;
 }
 
-/* =========================================
+.text-wide { max-width: 62ch; }
+.text-narrow { max-width: 48ch; }
+
+.section-subtitle {
+  margin-inline: auto;
+  margin-top: 0.6em;
+}
+
+/* =====================================================
    BUTTONS
-========================================= */
+===================================================== */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-pill);
   font-weight: 500;
-  transition: transform .2s ease, background .2s ease;
+  transition: transform .15s ease, background .15s ease;
 }
+
+.btn:active { transform: scale(0.97); }
 
 .btn-primary {
   background: var(--green-dark);
   color: #f3f4ec;
-  padding: 16px 36px;
 }
 
 .btn-primary:hover {
   background: var(--green-hover);
-  transform: translateY(-1px);
 }
 
 .btn-outline {
   border: 1px solid var(--green-dark);
   color: var(--green-dark);
-  padding: 16px 36px;
 }
 
 .btn-outline:hover {
@@ -137,45 +153,42 @@ p {
   color: #f3f4ec;
 }
 
-.btn-sm { padding: 10px 20px; font-size: .9rem; }
-.btn-lg { padding: 18px 42px; font-size: 1.1rem; }
-
-/* =========================================
-   NAVBAR (ANIMATED DARK GLASS)
-========================================= */
-.navbar {
-  position: fixed;
-  top: 20px; /* Starting position */
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 40px); /* Slightly wider start */
-  max-width: 1200px;
-  height: 76px;
-  z-index: 100;
-
-  /* Glass Base */
-  background: rgba(31, 51, 38, 0.75); /* More transparent at top */
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  
-  /* Borders & Shadows */
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  
-  /* LUXURY PHYSICS: smooth interpolation */
-  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+.btn-sm {
+  padding: 10px 18px;
+  font-size: var(--fs-small);
 }
 
-/* --- SCROLLED STATE (Triggered by JS) --- */
+.btn-lg {
+  padding: 14px 34px;
+  font-size: clamp(0.95rem, 2.4vw, 1.05rem);
+}
+
+/* =====================================================
+   NAVBAR
+===================================================== */
+.navbar {
+  position: fixed;
+  top: clamp(10px, 2vh, 18px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 1200px;
+  height: clamp(56px, 8vh, 72px);
+  z-index: 100;
+
+  background: rgba(31, 51, 38, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,255,255,.06);
+  box-shadow: 0 12px 28px rgba(0,0,0,.15);
+
+  transition: background .35s ease, height .35s ease;
+}
+
 .navbar.scrolled {
-  top: 10px; /* Moves up to get out of the way */
-  height: 64px; /* Compresses vertically */
-  width: calc(100% - 60px); /* Compresses horizontally */
-  
-  background: rgba(31, 51, 38, 0.95); /* Darkens for readability */
-  border-color: rgba(255, 255, 255, 0.04); /* Border fades slightly */
-  box-shadow: 0 20px 40px rgba(0,0,0,0.25); /* Shadow deepens */
+  background: rgba(31, 51, 38, 0.95);
 }
 
 .nav-wrapper {
@@ -183,166 +196,119 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px; /* Internal cushion */
+  padding-inline: clamp(14px, 3vw, 20px);
 }
 
-/* --- LOGO --- */
 .logo {
   font-family: var(--font-heading);
-  font-size: 1.25rem;
-  color: #ffffff;
-  transition: transform 0.3s ease;
+  font-size: clamp(1rem, 2.8vw, 1.15rem);
+  color: #fff;
 }
 
-/* --- LINKS (The Gold Trace Animation) --- */
 .nav-links {
   display: flex;
-  gap: 34px;
+  gap: clamp(18px, 4vw, 32px);
 }
 
 .nav-links a {
-  position: relative; /* Needed for the underline anchor */
-  font-size: .95rem;
-  color: rgba(255, 255, 255, 0.75);
-  transition: color 0.3s ease;
-  padding-bottom: 4px;
+  font-size: var(--fs-small);
+  color: rgba(255,255,255,.75);
+  position: relative;
 }
 
-/* The invisible line that appears */
-.nav-links a::after {
-  content: '';
+.nav-links a.active {
+  color: #fff;
+}
+
+.nav-links a.active::after {
+  content: "";
   position: absolute;
+  left: 0;
+  bottom: -6px;
   width: 100%;
   height: 1px;
-  bottom: 0;
-  left: 0;
-  background-color: #D4B982; /* Champagne Gold */
-  
-  /* Animation Logic */
-  transform: scaleX(0);
-  transform-origin: bottom right;
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--green-accent);
 }
 
-/* Hover State */
-.nav-links a:hover {
-  color: #ffffff;
-}
-
-.nav-links a:hover::after {
-  transform: scaleX(1);
-  transform-origin: bottom left;
-}
-
-/* --- MOBILE TOUCH FEEDBACK --- */
-/* When tapping the logo or links on mobile */
-.logo:active, 
-.nav-links a:active {
-  transform: scale(0.96); /* Subtle tactile shrink */
-  opacity: 0.8;
-}
-
-/* =========================================
+/* =====================================================
    HERO
-========================================= */
+===================================================== */
 .hero {
-  padding-top: 190px;
-  padding-bottom: 120px;
+  padding-top: clamp(120px, 18vh, 180px);
 }
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 80px;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: var(--gap-lg);
   align-items: center;
-}
-
-.hero-lead {
-  margin-bottom: 38px;
 }
 
 .hero-actions {
   display: flex;
-  gap: 16px;
+  gap: var(--gap-sm);
+  flex-wrap: wrap;
+  margin-top: 1.6em;
 }
 
-.hero-visual .visual-box {
-  height: 520px;
+/* =====================================================
+   VISUAL BOX
+===================================================== */
+.visual-box {
+  width: 100%;
+  height: clamp(360px, 40vh, 460px);
   background: var(--green-soft);
   border-radius: var(--radius-lg);
   box-shadow:
-    inset 0 0 0 1px rgba(0,0,0,.06),
-    0 24px 48px rgba(0,0,0,.1);
+    inset 0 0 0 1px rgba(0,0,0,.05),
+    0 20px 40px rgba(0,0,0,.12);
+  contain: layout paint style;
 }
 
-/* =========================================
-   PROBLEM
-========================================= */
-.problem {
-  background: var(--bg-section);
+/* Hover lift */
+.lift {
+  transform: translateY(-4px);
 }
 
-.problem-grid {
-  margin-top: 60px;
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 36px;
-}
-
-.problem-card {
-  background: var(--bg-card);
-  padding: 36px;
-  border-radius: var(--radius-md);
-}
-
-/* =========================================
-   GUIDE / PLAN
-========================================= */
-.grid-2-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 90px;
-  align-items: center;
-}
-
+/* =====================================================
+   SECTIONS / CARDS
+===================================================== */
+.problem,
 .plan {
   background: var(--bg-section);
 }
 
+.problem-grid,
 .plan-grid {
-  margin-top: 48px;
+  margin-top: var(--gap-md);
   display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 34px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--gap-md);
 }
 
+.problem-card,
 .plan-card {
   background: var(--bg-card);
-  padding: 40px;
+  padding: clamp(22px, 4vw, 36px);
   border-radius: var(--radius-md);
 }
 
-.step-number {
-  font-family: var(--font-heading);
-  color: var(--green-accent);
-  display: block;
-  margin-bottom: 12px;
+/* Guide & proof alignment */
+.grid-2-cols {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: var(--gap-lg);
+  align-items: center;
 }
 
-/* =========================================
-   PROOF
-========================================= */
-.proof-list {
-  margin-top: 22px;
+.guide-text,
+.proof-text {
+  padding-top: clamp(0px, 3vh, 24px);
 }
 
-.proof-list li {
-  margin-bottom: 10px;
-}
-
-/* =========================================
+/* =====================================================
    CTA
-========================================= */
+===================================================== */
 .cta {
   background: var(--green-dark);
   color: #f2f3ea;
@@ -355,73 +321,85 @@ p {
 
 .cta p {
   opacity: .85;
-  margin: 20px auto 40px;
+  margin: 1em auto 2em;
 }
 
-/* =========================================
+/* =====================================================
    FAQ
-========================================= */
+===================================================== */
 .faq details {
   background: var(--bg-card);
-  padding: 26px;
+  padding: clamp(18px, 4vw, 24px);
   border-radius: var(--radius-sm);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .faq summary {
   font-weight: 500;
   cursor: pointer;
-  color: var(--ink-strong);
+  position: relative;
 }
 
-/* =========================================
+.faq summary::after {
+  content: "›";
+  position: absolute;
+  right: 0;
+  transition: transform .2s ease;
+}
+
+.faq details[open] summary::after {
+  transform: rotate(90deg);
+}
+
+/* =====================================================
    FOOTER
-========================================= */
+===================================================== */
 .footer {
   background: #1b2b20;
   color: #dde3d8;
-  padding: 80px 0 40px;
+  padding-block: clamp(56px, 8vh, 80px) 40px;
 }
 
 .footer-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
-  gap: 50px;
+  gap: var(--gap-md);
 }
 
 .footer a {
   color: rgba(221,227,216,.7);
 }
 
-.footer a:hover {
-  color: #fff;
+.footer a:hover { color: #fff; }
+
+/* =====================================================
+   REDUCED MOTION
+===================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .lift { transform: none; }
 }
 
-.copyright {
-  margin-top: 40px;
-  font-size: .8rem;
-  opacity: .5;
-}
+/* =====================================================
+   MOBILE
+===================================================== */
+@media (max-width: 768px) {
 
-/* =========================================
-   RESPONSIVE
-========================================= */
-@media (max-width: 900px) {
   .hero-grid,
   .grid-2-cols,
-  .problem-grid,
-  .plan-grid,
   .footer-grid {
     grid-template-columns: 1fr;
   }
 
-  .hero {
-    padding-top: 150px;
-    text-align: center;
+  .visual-box {
+    height: 280px;
   }
 
-  .hero-actions {
-    justify-content: center;
-    flex-wrap: wrap;
+  .nav-links {
+    display: none;
+  }
+
+  h1, h2 {
+    letter-spacing: -0.01em;
   }
 }
