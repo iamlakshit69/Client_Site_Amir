@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function setNavVisibility(state) {
       if (navVisibility === state) return;
-      navbar.dataset.navVisibility = state;
+      navbar.dataset.state = state;
       navVisibility = state;
     }
 
