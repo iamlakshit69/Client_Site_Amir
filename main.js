@@ -8,26 +8,25 @@ document.addEventListener("DOMContentLoaded", () => {
   ).matches;
 
   const isMobile = window.matchMedia("(max-width: 768px)").matches;
-
   const navbar = document.querySelector(".navbar");
+
   if (!navbar) return;
 
   /* =====================================================
-     2. DESKTOP NAVBAR (UNCHANGED BEHAVIOR)
+     2. DESKTOP NAVBAR — SCROLLED STATE ONLY
      ===================================================== */
   if (!isMobile) {
     let lastState = "top";
 
-    const getThreshold = () =>
-      Math.round(window.innerHeight * 0.06);
-
+    const getThreshold = () => Math.round(window.innerHeight * 0.06);
     let threshold = getThreshold();
 
     function updateDesktopNavbar() {
-      const scrollTop =
-        document.documentElement.scrollTop || window.pageYOffset;
+      const y =
+        window.scrollY ||
+        document.documentElement.scrollTop;
 
-      const nextState = scrollTop > threshold ? "scrolled" : "top";
+      const nextState = y > threshold ? "scrolled" : "top";
 
       if (nextState !== lastState) {
         navbar.classList.toggle("scrolled", nextState === "scrolled");
@@ -46,91 +45,81 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =====================================================
-     3. MOBILE SAFARI-STYLE NAVBAR (HIDE / SHOW)
+     3. MOBILE SAFARI-STYLE NAVBAR (VELOCITY BASED)
      ===================================================== */
   if (prefersReducedMotion) return;
 
-  let lastScroll =
-    document.documentElement.scrollTop || window.pageYOffset;
-
-  let accumulator = 0;
+  let lastY = window.scrollY;
+  let lastTime = performance.now();
   let navState = "visible";
+  let rafId = null;
 
-  /* ---- Tunable feel knobs ---- */
-  const HIDE_THRESHOLD = 40; // scroll down intent
-  const SHOW_THRESHOLD = 5; // scroll up intent
-  const TOP_LOCK = 80;       // always visible near top
-  const NOISE = 1;           // ignore micro jitter
+  const TOP_LOCK = 80;          // always visible near top
+  const HIDE_VELOCITY = 0.35;   // px/ms downward
+  const SHOW_VELOCITY = -0.15;  // px/ms upward
 
-  function setNavState(state) {
+  function setNav(state) {
     if (navState === state) return;
     navbar.dataset.state = state;
     navState = state;
   }
 
-  /* Ensure visible on load */
-  setNavState("visible");
+  setNav("visible");
 
-  window.addEventListener(
-    "scroll",
-    () => {
-      const currentScroll =
-        document.documentElement.scrollTop || window.pageYOffset;
+  function onScroll() {
+    if (rafId) return;
 
-      const delta = currentScroll - lastScroll;
-      lastScroll = currentScroll;
+    rafId = requestAnimationFrame(() => {
+      const currentY = window.scrollY;
+      const now = performance.now();
+
+      const dy = currentY - lastY;
+      const dt = now - lastTime || 16;
+      const velocity = dy / dt;
+
+      lastY = currentY;
+      lastTime = now;
+      rafId = null;
 
       /* Always visible near top */
-      if (currentScroll < TOP_LOCK) {
-        accumulator = 0;
-        setNavState("visible");
+      if (currentY < TOP_LOCK) {
+        setNav("visible");
         return;
       }
 
-      /* Ignore tiny movement */
-      if (Math.abs(delta) < NOISE) return;
-
-      accumulator += delta;
-
       /* Scroll down → hide */
-      if (accumulator > HIDE_THRESHOLD && navState === "visible") {
-        setNavState("hidden");
-        accumulator = 0;
+      if (velocity > HIDE_VELOCITY && navState === "visible") {
+        setNav("hidden");
+        return;
       }
 
       /* Scroll up → show */
-      if (accumulator < -SHOW_THRESHOLD && navState === "hidden") {
-        setNavState("visible");
-        accumulator = 0;
+      if (velocity < SHOW_VELOCITY && navState === "hidden") {
+        setNav("visible");
       }
-    },
-    { passive: true }
-  );
+    });
+  }
 
-  /* Accessibility: show navbar on focus */
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  /* Accessibility: reveal on focus */
   navbar.addEventListener("focusin", () => {
-    setNavState("visible");
+    setNav("visible");
   });
 
   /* =====================================================
-     4. INTERACTION FEEDBACK (DESKTOP ONLY)
+     4. DESKTOP HOVER LIFT (UNCHANGED)
      ===================================================== */
   const isTouch =
     window.matchMedia("(pointer: coarse)").matches ||
     navigator.maxTouchPoints > 0;
 
   if (!isTouch && !prefersReducedMotion) {
-    const liftables = document.querySelectorAll(
+    document.querySelectorAll(
       ".problem-card, .plan-card, .visual-box"
-    );
-
-    liftables.forEach(el => {
-      el.addEventListener("mouseenter", () => {
-        el.classList.add("lift");
-      });
-      el.addEventListener("mouseleave", () => {
-        el.classList.remove("lift");
-      });
+    ).forEach(el => {
+      el.addEventListener("mouseenter", () => el.classList.add("lift"));
+      el.addEventListener("mouseleave", () => el.classList.remove("lift"));
     });
   }
 
@@ -149,10 +138,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* =====================================================
-     6. NAV SECTION AWARENESS (DESKTOP)
+     6. NAV SECTION AWARENESS (DESKTOP ONLY)
      ===================================================== */
-  const sections = document.querySelectorAll("section[id]");
   const navLinks = document.querySelectorAll(".nav-links a");
+  const sections = document.querySelectorAll("section[id]");
 
   if ("IntersectionObserver" in window && navLinks.length) {
     const observer = new IntersectionObserver(
@@ -168,10 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         });
       },
-      {
-        rootMargin: "-30% 0px -50% 0px",
-        threshold: 0
-      }
+      { rootMargin: "-30% 0px -50% 0px" }
     );
 
     sections.forEach(section => observer.observe(section));
