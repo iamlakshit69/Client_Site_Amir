@@ -16,7 +16,7 @@
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 
 <body>
@@ -24,7 +24,9 @@
 <!-- =========================
      NAVBAR
 ========================== -->
-<nav class="navbar" data-state="top">
+<nav class="navbar"
+     data-nav="main"
+     data-nav-visibility="visible">
   <div class="container nav-wrapper">
 
     <div class="logo">
@@ -45,7 +47,7 @@
 </nav>
 
 <!-- =========================
-     HERO (LOOSE SPACING)
+     HERO
 ========================== -->
 <header class="hero section section--loose">
   <div class="container hero-grid">
@@ -75,7 +77,7 @@
 </header>
 
 <!-- =========================
-     PROBLEM (TIGHTER RHYTHM)
+     PROBLEM
 ========================== -->
 <section class="section section--tight problem">
   <div class="container center">
@@ -117,7 +119,7 @@
 </section>
 
 <!-- =========================
-     PHILOSOPHY / GUIDE
+     PHILOSOPHY
 ========================== -->
 <section id="philosophy" class="section guide">
   <div class="container grid-2-cols">
@@ -214,7 +216,7 @@
 </section>
 
 <!-- =========================
-     CTA (LOOSE, FOCAL)
+     CTA
 ========================== -->
 <section id="cta" class="section section--loose cta">
   <div class="container center">
@@ -241,33 +243,18 @@
     <h2 class="center">Common questions</h2>
 
     <details>
-      <summary>
-        <span>Who is this for?</span>
-      </summary>
-      <p>
-        People who want clarity and structure,
-        not quick fixes.
-      </p>
+      <summary><span>Who is this for?</span></summary>
+      <p>People who want clarity and structure, not quick fixes.</p>
     </details>
 
     <details>
-      <summary>
-        <span>Is this weight loss focused?</span>
-      </summary>
-      <p>
-        No. Body composition often improves,
-        but health comes first.
-      </p>
+      <summary><span>Is this weight loss focused?</span></summary>
+      <p>No. Body composition often improves, but health comes first.</p>
     </details>
 
     <details>
-      <summary>
-        <span>How fast does it work?</span>
-      </summary>
-      <p>
-        Most people gain meaningful clarity
-        within weeks.
-      </p>
+      <summary><span>How fast does it work?</span></summary>
+      <p>Most people gain meaningful clarity within weeks.</p>
     </details>
 
   </div>
@@ -308,6 +295,6 @@
   </div>
 </footer>
 
-<script src="main.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
