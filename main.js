@@ -1,116 +1,124 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   /* =====================================================
-     1. NAVBAR — SOFT STATE CHANGE (NOT FLASHY)
+     1. CAPABILITIES & USER PREFERENCES
+     ===================================================== */
+  const isTouch =
+    window.matchMedia("(pointer: coarse)").matches ||
+    navigator.maxTouchPoints > 0;
+
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  /* =====================================================
+     2. NAVBAR — VIEWPORT-AWARE STATE MACHINE
      ===================================================== */
   const navbar = document.querySelector(".navbar");
+  if (!navbar) return;
 
-  const updateNavState = () => {
-    if (window.scrollY > 40) {
-      navbar.classList.add("scrolled");
-    } else {
-      navbar.classList.remove("scrolled");
+  let currentState = "top";
+  let ticking = false;
+
+  // Scroll threshold scales with viewport height
+  const getThreshold = () => Math.round(window.innerHeight * 0.06);
+  let scrollThreshold = getThreshold();
+
+  function updateNavbar(scrollY) {
+    const nextState = scrollY > scrollThreshold ? "scrolled" : "top";
+    if (nextState !== currentState) {
+      navbar.dataset.state = nextState;
+      navbar.classList.toggle("scrolled", nextState === "scrolled");
+      currentState = nextState;
     }
-  };
+  }
 
-  updateNavState();
-  window.addEventListener("scroll", updateNavState, { passive: true });
+  function onScroll() {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        updateNavbar(window.scrollY);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
 
-
-  /* =====================================================
-     2. INTENT-BASED CARD FEEDBACK
-     (Feels cozy, not animated-for-attention)
-     ===================================================== */
-  const interactiveCards = document.querySelectorAll(
-    ".problem-card, .plan-card, .success-card, .guide-visual, .hero-visual"
-  );
-
-  interactiveCards.forEach(card => {
-    card.addEventListener("mouseenter", () => {
-      card.style.transform = "translateY(-4px)";
-      card.style.transition = "transform 0.25s ease";
-    });
-
-    card.addEventListener("mouseleave", () => {
-      card.style.transform = "translateY(0)";
-    });
-
-    // Keyboard accessibility
-    card.addEventListener("focus", () => {
-      card.style.transform = "translateY(-4px)";
-    });
-
-    card.addEventListener("blur", () => {
-      card.style.transform = "translateY(0)";
-    });
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", () => {
+    scrollThreshold = getThreshold();
+    updateNavbar(window.scrollY);
   });
 
+  updateNavbar(window.scrollY);
 
   /* =====================================================
-     3. FAQ — EXCLUSIVE ACCORDION (CLEAN UX)
+     3. INTERACTION FEEDBACK (DESKTOP ONLY)
      ===================================================== */
-  const faqItems = document.querySelectorAll(".faq-item");
+  if (!isTouch && !prefersReducedMotion) {
+    const liftables = document.querySelectorAll(
+      ".problem-card, .plan-card, .visual-box"
+    );
+
+    liftables.forEach(el => {
+      el.addEventListener("mouseenter", () => {
+        el.classList.add("lift");
+      });
+
+      el.addEventListener("mouseleave", () => {
+        el.classList.remove("lift");
+      });
+    });
+  }
+
+  /* =====================================================
+     4. FAQ — EXCLUSIVE ACCORDION (CLEAN & ACCESSIBLE)
+     ===================================================== */
+  const faqItems = document.querySelectorAll(".faq details");
 
   faqItems.forEach(item => {
     item.addEventListener("toggle", () => {
-      if (item.open) {
-        faqItems.forEach(other => {
-          if (other !== item) other.removeAttribute("open");
-        });
-      }
+      if (!item.open) return;
+      faqItems.forEach(other => {
+        if (other !== item) other.removeAttribute("open");
+      });
     });
   });
 
-
   /* =====================================================
-     4. CTA EMPHASIS — USER INTENT BASED
-     (When user hovers or tabs into CTA area)
-     ===================================================== */
-  const ctaBox = document.querySelector(".cta-box");
-  const ctaButton = ctaBox?.querySelector(".btn-primary");
-
-  if (ctaBox && ctaButton) {
-    const emphasize = () => {
-      ctaButton.style.transform = "translateY(-2px)";
-      ctaButton.style.boxShadow = "0 10px 28px rgba(0,0,0,0.18)";
-    };
-
-    const reset = () => {
-      ctaButton.style.transform = "translateY(0)";
-      ctaButton.style.boxShadow = "none";
-    };
-
-    ctaBox.addEventListener("mouseenter", emphasize);
-    ctaBox.addEventListener("mouseleave", reset);
-    ctaBox.addEventListener("focusin", emphasize);
-    ctaBox.addEventListener("focusout", reset);
-  }
-
-
-  /* =====================================================
-     5. OPTIONAL: SECTION AWARENESS (NO ANIMATION)
-     (Adds .active-section for future CSS polish)
+     5. NAV SECTION AWARENESS (LOW-COST ORIENTATION)
      ===================================================== */
   const sections = document.querySelectorAll("section[id]");
   const navLinks = document.querySelectorAll(".nav-links a");
 
-  const sectionObserver = new IntersectionObserver(
-    entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.getAttribute("id");
+  if ("IntersectionObserver" in window && navLinks.length) {
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+
+          const id = entry.target.id;
           navLinks.forEach(link => {
             link.classList.toggle(
               "active",
               link.getAttribute("href") === `#${id}`
             );
           });
-        }
-      });
-    },
-    { threshold: 0.4 }
-  );
+        });
+      },
+      {
+        rootMargin: "-30% 0px -50% 0px",
+        threshold: 0
+      }
+    );
 
-  sections.forEach(section => sectionObserver.observe(section));
+    sections.forEach(section => observer.observe(section));
+  }
+
+  /* =====================================================
+     6. REDUCED MOTION — HARD STOP
+     ===================================================== */
+  if (prefersReducedMotion) {
+    document.documentElement.style.scrollBehavior = "auto";
+  }
 
 });
