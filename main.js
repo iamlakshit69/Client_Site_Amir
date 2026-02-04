@@ -57,8 +57,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let navState = "visible";
 
   /* ---- Tunable feel knobs ---- */
-  const HIDE_THRESHOLD = 24; // scroll down intent
-  const SHOW_THRESHOLD = 10; // scroll up intent
+  const HIDE_THRESHOLD = 40; // scroll down intent
+  const SHOW_THRESHOLD = 5; // scroll up intent
   const TOP_LOCK = 80;       // always visible near top
   const NOISE = 1;           // ignore micro jitter
 
